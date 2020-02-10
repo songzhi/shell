@@ -21,13 +21,17 @@ pub enum SyntaxShape {
 
 impl fmt::Display for SyntaxShape {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", match self {
-            SyntaxShape::Any => "any",
-            SyntaxShape::String => "string",
-            SyntaxShape::Number => "number",
-            SyntaxShape::Int => "integer",
-            SyntaxShape::Path => "path",
-            SyntaxShape::Pattern => "pattern"
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                SyntaxShape::Any => "any",
+                SyntaxShape::String => "string",
+                SyntaxShape::Number => "number",
+                SyntaxShape::Int => "integer",
+                SyntaxShape::Path => "path",
+                SyntaxShape::Pattern => "pattern",
+            }
+        )
     }
 }

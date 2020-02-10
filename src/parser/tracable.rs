@@ -1,6 +1,6 @@
-use nom_locate::LocatedSpanEx;
-use nom_tracable::{TracableInfo, HasTracableInfo};
 use derive_new::new;
+use nom_locate::LocatedSpanEx;
+use nom_tracable::{HasTracableInfo, TracableInfo};
 
 pub type NomSpan<'a> = LocatedSpanEx<&'a str, TracableContext>;
 

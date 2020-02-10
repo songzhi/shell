@@ -14,7 +14,6 @@ pub enum NamedType {
     Optional(SyntaxShape),
 }
 
-
 /// The type of positional arguments
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum PositionalType {
@@ -34,7 +33,6 @@ impl PositionalType {
     pub fn mandatory_any(name: &str) -> PositionalType {
         PositionalType::Mandatory(name.to_string(), SyntaxShape::Any)
     }
-
 
     /// Helper to create a optional positional argument type
     pub fn optional(name: &str, ty: SyntaxShape) -> PositionalType {
@@ -91,7 +89,6 @@ impl Signature {
         self.named.remove(name);
     }
 }
-
 
 impl Signature {
     /// Create a new command signature with the given name

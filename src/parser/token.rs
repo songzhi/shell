@@ -12,7 +12,7 @@ pub enum Token {
     Whitespace,
     Separator,
     GlobPattern,
-    ExternalCommand(Span),
+    ExternalWord,
 }
 
 pub type SpannedToken = Spanned<Token>;

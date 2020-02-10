@@ -7,7 +7,7 @@ pub struct Span {
     end: usize,
 }
 
-pub fn span_for_spanned_list(mut iter: impl Iterator<Item=Span>) -> Span {
+pub fn span_for_spanned_list(mut iter: impl Iterator<Item = Span>) -> Span {
     let first = iter.next();
 
     let first = match first {
@@ -35,6 +35,12 @@ impl From<Option<Span>> for Span {
             None => Span::new(0, 0),
             Some(span) => span,
         }
+    }
+}
+
+impl From<(usize, usize)> for Span {
+    fn from((start, end): (usize, usize)) -> Span {
+        Span { start, end }
     }
 }
 
@@ -137,8 +143,8 @@ impl<T> Spanned<T> {
 impl Spanned<String> {
     /// Iterates over the contained String
     pub fn items<'a, U>(
-        items: impl Iterator<Item=&'a Spanned<String>>,
-    ) -> impl Iterator<Item=&'a str> {
+        items: impl Iterator<Item = &'a Spanned<String>>,
+    ) -> impl Iterator<Item = &'a str> {
         items.map(|item| &item.item[..])
     }
 }
@@ -185,8 +191,8 @@ pub trait HasSpan {
 }
 
 impl<T, E> HasSpan for Result<T, E>
-    where
-        T: HasSpan,
+where
+    T: HasSpan,
 {
     fn span(&self) -> Span {
         match self {
