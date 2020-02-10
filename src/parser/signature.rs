@@ -1,7 +1,7 @@
-use serde::{Serialize, Deserialize};
 use indexmap::IndexMap;
-use super::syntax_shape::SyntaxShape;
+use serde::{Deserialize, Serialize};
 
+use super::syntax_shape::SyntaxShape;
 
 /// The types of named parameter that a command can have
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -89,5 +89,99 @@ impl Signature {
 
     pub fn remove_named(&mut self, name: &str) {
         self.named.remove(name);
+    }
+}
+
+
+impl Signature {
+    /// Create a new command signature with the given name
+    pub fn new(name: impl Into<String>) -> Signature {
+        Signature {
+            name: name.into(),
+            usage: String::new(),
+            positional: vec![],
+            rest_positional: None,
+            named: indexmap::indexmap! {"help".into() => (NamedType::Switch, "Display this help message".into())},
+        }
+    }
+
+    /// Create a new signature
+    pub fn build(name: impl Into<String>) -> Signature {
+        Signature::new(name.into())
+    }
+
+    /// Add a description to the signature
+    pub fn desc(mut self, usage: impl Into<String>) -> Signature {
+        self.usage = usage.into();
+        self
+    }
+
+    /// Add a required positional argument to the signature
+    pub fn required(
+        mut self,
+        name: impl Into<String>,
+        ty: impl Into<SyntaxShape>,
+        desc: impl Into<String>,
+    ) -> Signature {
+        self.positional.push((
+            PositionalType::Mandatory(name.into(), ty.into()),
+            desc.into(),
+        ));
+
+        self
+    }
+
+    /// Add an optional positional argument to the signature
+    pub fn optional(
+        mut self,
+        name: impl Into<String>,
+        ty: impl Into<SyntaxShape>,
+        desc: impl Into<String>,
+    ) -> Signature {
+        self.positional.push((
+            PositionalType::Optional(name.into(), ty.into()),
+            desc.into(),
+        ));
+
+        self
+    }
+
+    /// Add an optional named flag argument to the signature
+    pub fn named(
+        mut self,
+        name: impl Into<String>,
+        ty: impl Into<SyntaxShape>,
+        desc: impl Into<String>,
+    ) -> Signature {
+        self.named
+            .insert(name.into(), (NamedType::Optional(ty.into()), desc.into()));
+
+        self
+    }
+
+    /// Add a required named flag argument to the signature
+    pub fn required_named(
+        mut self,
+        name: impl Into<String>,
+        ty: impl Into<SyntaxShape>,
+        desc: impl Into<String>,
+    ) -> Signature {
+        self.named
+            .insert(name.into(), (NamedType::Mandatory(ty.into()), desc.into()));
+
+        self
+    }
+
+    /// Add a switch to the signature
+    pub fn switch(mut self, name: impl Into<String>, desc: impl Into<String>) -> Signature {
+        self.named
+            .insert(name.into(), (NamedType::Switch, desc.into()));
+        self
+    }
+
+    /// Set the type for the "rest" of the positional arguments
+    pub fn rest(mut self, ty: SyntaxShape, desc: impl Into<String>) -> Signature {
+        self.rest_positional = Some((ty, desc.into()));
+        self
     }
 }
