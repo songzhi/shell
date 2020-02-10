@@ -44,6 +44,12 @@ impl From<(usize, usize)> for Span {
     }
 }
 
+impl<T> From<nom_locate::LocatedSpanEx<&str, T>> for Span {
+    fn from(input: nom_locate::LocatedSpanEx<&str, T>) -> Span {
+        Span::new(input.offset, input.offset + input.fragment.len())
+    }
+}
+
 impl Span {
     pub fn unknown() -> Span {
         Span::new(0, 0)

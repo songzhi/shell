@@ -5,18 +5,31 @@ use nom::character::complete::{char, none_of, space1};
 use nom::combinator::opt;
 use nom::error::ParseError;
 use nom::multi::{many0, many1};
-use nom::{IResult, InputIter, Slice};
-use nom_tracable::{tracable_parser, HasTracableInfo, TracableInfo};
+use nom::sequence::tuple;
+use nom::{IResult, InputIter, InputLength, Slice};
+use nom_tracable::{tracable_parser, TracableInfo};
 
+pub use parse_pipeline as parse;
+use pipeline::{Pipeline, PipelineElement};
 use span::{Span, Spanned, SpannedItem};
 use token::{SpannedToken, Token};
-use tracable::{nom_input, NomSpan, TracableContext};
+use tracable::{nom_input, NomSpan};
 
+use crate::error::{ProximateShellError, ShellError};
+
+pub mod pipeline;
 pub mod signature;
 pub mod span;
 pub mod syntax_shape;
 pub mod token;
 pub mod tracable;
+
+pub fn parse_pipeline(input: &str) -> Result<SpannedToken, ShellError> {
+    match pipeline(nom_input(input)) {
+        Ok((_rest, val)) => Ok(val),
+        Err(_) => Err(ProximateShellError::ParseError.start()),
+    }
+}
 
 #[tracable_parser]
 pub fn dq_string(input: NomSpan) -> IResult<NomSpan, SpannedToken> {
@@ -91,7 +104,7 @@ fn word<'a, T, U, V>(
         let (input, _) = start_predicate(input)?;
         let (input, _) = many0(next_predicate)(input)?;
 
-        let next_char = &input.fragment.chars().nth(0);
+        let next_char = &input.fragment.chars().next();
 
         match next_char {
             Some('.') => {}
@@ -193,7 +206,7 @@ fn start_file_char(input: NomSpan) -> IResult<NomSpan, BitFlags<SawSpecial>> {
         return Ok((input, special));
     }
 
-    start_filename(input).map(|(input, output)| (input, BitFlags::empty()))
+    start_filename(input).map(|(input, _)| (input, BitFlags::empty()))
 }
 
 #[tracable_parser]
@@ -280,7 +293,7 @@ pub fn token_list(input: NomSpan) -> IResult<NomSpan, Spanned<Vec<SpannedToken>>
     let mut before_space_input: Option<NomSpan> = None;
     let mut final_space_tokens = 0;
     loop {
-        let node_result = node(input);
+        let node_result = node(next_input);
         let (after_node_input, next_node) = match node_result {
             Err(_) => {
                 if let Some(before_space_input) = before_space_input {
@@ -340,6 +353,32 @@ pub fn spaced_token_list(input: NomSpan) -> IResult<NomSpan, Spanned<Vec<Spanned
     }
 
     Ok((input, out.spanned(Span::new(start, end))))
+}
+
+#[tracable_parser]
+pub fn pipeline(input: NomSpan) -> IResult<NomSpan, SpannedToken> {
+    let start = input.offset;
+    let (input, head) = spaced_token_list(input)?;
+    let (input, items) = many0(tuple((tag("|"), spaced_token_list)))(input)?;
+
+    if input.input_len() != 0 {
+        return Err(nom::Err::Error((input, nom::error::ErrorKind::Eof)));
+    }
+
+    let end = input.offset;
+
+    let mut all_items: Vec<PipelineElement> = vec![PipelineElement::new(None, head)];
+
+    all_items.extend(
+        items
+            .into_iter()
+            .map(|(pipe, items)| PipelineElement::new(Some(Span::from(pipe)), items)),
+    );
+
+    Ok((
+        input,
+        Token::Pipeline(Pipeline::new(all_items)).spanned(Span::new(start, end)),
+    ))
 }
 
 fn is_external_word_char(c: char) -> bool {

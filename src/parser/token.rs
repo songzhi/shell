@@ -1,8 +1,5 @@
-use std::ops::Deref;
-
-use crate::parser::span::Spanned;
-
-use super::span::{HasSpan, Span};
+use super::pipeline::Pipeline;
+use super::span::{Span, Spanned};
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Token {
@@ -13,6 +10,22 @@ pub enum Token {
     Separator,
     GlobPattern,
     ExternalWord,
+    Pipeline(Pipeline),
+}
+
+impl Token {
+    pub fn desc(&self) -> &'static str {
+        match self {
+            Token::String(_) => "string",
+            Token::Bare => "bare",
+            Token::Flag(_) => "flag",
+            Token::Whitespace => "whitespace",
+            Token::Separator => "separator",
+            Token::GlobPattern => "glob pattern",
+            Token::ExternalWord => "external word",
+            Token::Pipeline(_) => "pipeline",
+        }
+    }
 }
 
 pub type SpannedToken = Spanned<Token>;
@@ -22,5 +35,3 @@ impl From<&SpannedToken> for Span {
         token.span
     }
 }
-
-impl SpannedToken {}
