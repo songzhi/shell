@@ -7,7 +7,7 @@ use nom::error::ParseError;
 use nom::multi::{many0, many1};
 use nom::sequence::tuple;
 use nom::{IResult, InputIter, InputLength, Slice};
-use nom_tracable::{tracable_parser, TracableInfo};
+use nom_tracable::tracable_parser;
 
 pub use parse_pipeline as parse;
 use pipeline::{Pipeline, PipelineElement};
@@ -15,10 +15,11 @@ use span::{Span, Spanned, SpannedItem};
 use token::{SpannedToken, Token};
 use tracable::{nom_input, NomSpan};
 
-use crate::error::{ProximateShellError, ShellError};
+use crate::error::ShellError;
 
+pub mod command;
+pub mod hir;
 pub mod pipeline;
-pub mod signature;
 pub mod span;
 pub mod syntax_shape;
 pub mod token;
@@ -27,7 +28,7 @@ pub mod tracable;
 pub fn parse_pipeline(input: &str) -> Result<SpannedToken, ShellError> {
     match pipeline(nom_input(input)) {
         Ok((_rest, val)) => Ok(val),
-        Err(_) => Err(ProximateShellError::ParseError.start()),
+        Err(err) => Err(ShellError::parse_error(err)),
     }
 }
 

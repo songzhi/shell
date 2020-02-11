@@ -1,15 +1,16 @@
 use derive_new::new;
+use serde::{Deserialize, Serialize};
 
 use crate::parser::span::HasSpan;
 
 use super::{Span, Spanned, SpannedToken};
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, new)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, new, Serialize, Deserialize)]
 pub struct Pipeline {
     pub parts: Vec<PipelineElement>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct PipelineElement {
     pub pipe: Option<Span>,
     pub tokens: Spanned<Vec<SpannedToken>>,
