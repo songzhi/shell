@@ -18,4 +18,5 @@ pub enum Value {
     /// A file path
     Path(PathBuf),
     Boolean(bool),
+    List(Vec<Value>),
 }
