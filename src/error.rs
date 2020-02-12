@@ -33,6 +33,23 @@ impl ShellError {
     }
 }
 
+impl std::fmt::Display for ShellError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.error)
+    }
+}
+
+impl serde::de::Error for ShellError {
+    fn custom<T>(msg: T) -> Self
+    where
+        T: std::fmt::Display,
+    {
+        ShellError::runtime_error(msg.to_string())
+    }
+}
+
+impl std::error::Error for ShellError {}
+
 #[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Serialize, Deserialize, Hash)]
 pub enum ProximateShellError {
     ParseError(Span, Option<String>),
@@ -45,5 +62,23 @@ impl ProximateShellError {
             cause: None,
             error: self,
         }
+    }
+}
+
+impl std::fmt::Display for ProximateShellError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                ProximateShellError::ParseError(span, reason) => {
+                    let reason = reason.unwrap_or(String::new());
+                    format!("{}^^^ {}", " ".repeat(span.start()), reason)
+                }
+                ProximateShellError::RuntimeError(reason) => {
+                    reason.clone()
+                }
+            }
+        )
     }
 }

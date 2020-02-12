@@ -1,6 +1,7 @@
 pub mod cli;
 pub mod commands;
 pub mod context;
+pub mod deserializer;
 pub mod error;
 pub mod evaluate;
 pub mod parser;
