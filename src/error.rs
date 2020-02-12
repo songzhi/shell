@@ -41,8 +41,8 @@ impl std::fmt::Display for ShellError {
 
 impl serde::de::Error for ShellError {
     fn custom<T>(msg: T) -> Self
-    where
-        T: std::fmt::Display,
+        where
+            T: std::fmt::Display,
     {
         ShellError::runtime_error(msg.to_string())
     }
@@ -73,7 +73,7 @@ impl std::fmt::Display for ProximateShellError {
             match self {
                 ProximateShellError::ParseError(span, reason) => {
                     let reason = reason.unwrap_or(String::new());
-                    format!("{}^^^ {}", " ".repeat(span.start()), reason)
+                    format!("{}{}{}", " ".repeat(span.start()), "^".repeat(span.len()), reason)
                 }
                 ProximateShellError::RuntimeError(reason) => {
                     reason.clone()

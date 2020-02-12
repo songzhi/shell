@@ -19,3 +19,6 @@ enumflags2 = "0.6.2"
 num-bigint = { version = "0.2.3", features = ["serde"] }
 bigdecimal = { version = "0.1.0", features = ["serde"] }
 parking_lot = "0.10.0"
+which = "3.1.0"
+shellexpand = "1.1.1"
+dirs = "2.0.2"
