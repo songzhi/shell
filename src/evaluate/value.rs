@@ -17,4 +17,5 @@ pub enum Value {
     Pattern(String),
     /// A file path
     Path(PathBuf),
+    Boolean(bool),
 }

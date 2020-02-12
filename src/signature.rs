@@ -1,7 +1,7 @@
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
-use super::syntax_shape::SyntaxShape;
+use crate::parser::syntax_shape::SyntaxShape;
 
 /// The types of named parameter that a command can have
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -12,6 +12,15 @@ pub enum NamedType {
     Mandatory(SyntaxShape),
     /// An optional flag, with associated argument. eg) `foo --optional abc`
     Optional(SyntaxShape),
+}
+
+impl NamedType {
+    pub fn is_mandatory(&self) -> bool {
+        match self {
+            NamedType::Mandatory(_) => true,
+            _ => false,
+        }
+    }
 }
 
 /// The type of positional arguments
@@ -58,6 +67,17 @@ impl PositionalType {
             PositionalType::Mandatory(_, t) => t,
             PositionalType::Optional(_, t) => t,
         }
+    }
+
+    pub fn is_mandatory(&self) -> bool {
+        match self {
+            PositionalType::Mandatory(_, _) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_optional(&self) -> bool {
+        !self.is_mandatory()
     }
 }
 

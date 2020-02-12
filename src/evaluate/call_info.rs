@@ -3,12 +3,14 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
 use crate::evaluate::value::Value;
+use crate::parser::span::Span;
 
 /// Associated information for the call of a command, including the args passed to the command and a tag that spans the name of the command being called
 #[derive(Deserialize, Serialize, Debug, Clone, Eq, PartialEq)]
 pub struct CallInfo {
     /// The arguments associated with this call
     pub args: EvaluatedArgs,
+    //    pub name: Span,
 }
 
 /// The set of positional and named arguments, after their values have been evaluated.

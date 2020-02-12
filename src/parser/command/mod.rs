@@ -58,8 +58,7 @@ pub fn parse_command_tail(
     if let Some((positional_type, _)) = rest_signature
         .positional
         .iter()
-        .filter(|p| p.0.is_mandatory())
-        .next()
+        .find(|p| p.0.is_mandatory())
     {
         err = Some((
             command_span,
@@ -74,8 +73,7 @@ pub fn parse_command_tail(
         if let Some((name, _)) = rest_signature
             .named
             .iter()
-            .filter(|(_, kind)| kind.0.is_mandatory())
-            .next()
+            .find(|(_, kind)| kind.0.is_mandatory())
         {
             err = Some((
                 command_span,
