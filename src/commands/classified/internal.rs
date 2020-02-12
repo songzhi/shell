@@ -9,5 +9,6 @@ pub(crate) fn run_internal_command(
     input: Option<Vec<Value>>,
     source: &str,
 ) -> Result<Option<Vec<Value>>, ShellError> {
-    unimplemented!()
+    let internal_command = context.expect_command(command.name.as_str())?;
+    context.run_command(internal_command, command.args, source, input)
 }

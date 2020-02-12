@@ -7,7 +7,7 @@ use parking_lot::Mutex;
 use crate::commands::BoxedCommand;
 use crate::error::ShellError;
 use crate::evaluate::call_info::CallInfo;
-use crate::evaluate::evaluate_args;
+use crate::evaluate::{evaluate_args, Value};
 use crate::parser::hir::Call;
 use crate::shell::{FilesystemShell, Shell};
 use crate::signature::Signature;
@@ -85,14 +85,13 @@ impl Context {
     pub(crate) fn run_command(
         &mut self,
         command: Arc<BoxedCommand>,
-        name: &str,
         args: Call,
         source: &str,
-    ) -> Result<(), ShellError> {
+        input: Option<Vec<Value>>,
+    ) -> Result<Option<Vec<Value>>, ShellError> {
         let call_info = CallInfo {
-            args: evaluate_args(args, &self.registry, source)?,
+            args: evaluate_args(args, command.clone(), &self.registry, source)?,
         };
-        command.run(call_info, &self.registry)?;
-        Ok(())
+        command.run(call_info, &self.registry, input)
     }
 }

@@ -6,18 +6,6 @@ use crate::error::ShellError;
 use crate::evaluate::Value;
 use crate::parser::command::classified::external::ExternalCommand;
 
-pub fn value_to_string(from: &Value) -> Option<String> {
-    match from {
-        Value::Int(i) => Some(i.to_string()),
-        Value::Number(i) => Some(i.to_string()),
-        Value::String(s) => Some(s.clone()),
-        Value::Pattern(s) => Some(s.clone()),
-        Value::Path(s) => Some(s.to_string_lossy().to_string()),
-        Value::Boolean(b) => Some(b.to_string()),
-        Value::List(_) | Value::Nothing => None,
-    }
-}
-
 pub(crate) fn run_external_command(
     command: ExternalCommand,
     context: &mut Context,
@@ -88,11 +76,9 @@ pub(crate) fn run_external_command(
                 .take()
                 .expect("Internal error: could not get stdin pipe for external command");
             for val in input {
-                if let Some(val) = value_to_string(&val) {
-                    if let Err(e) = stdin_write.write(val.as_bytes()) {
-                        let message = format!("Unable to write to stdin (error = {})", e);
-                        return Err(ShellError::runtime_error(message));
-                    }
+                if let Err(e) = stdin_write.write(val.to_string().as_bytes()) {
+                    let message = format!("Unable to write to stdin (error = {})", e);
+                    return Err(ShellError::runtime_error(message));
                 }
             }
             return if !is_last {
@@ -108,7 +94,8 @@ pub(crate) fn run_external_command(
                     if n == 0 {
                         break;
                     }
-                    results.push(Value::String(buf.clone()));
+                    results.push(Value::String(buf.as_str().to_string()));
+                    buf.clear();
                 }
                 Ok(Some(results))
             } else {

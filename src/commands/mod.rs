@@ -1,9 +1,6 @@
-use std::io::Stdout;
-use std::process::Stdio;
-
 use crate::context::CommandRegistry;
 use crate::error::ShellError;
-use crate::evaluate::CallInfo;
+use crate::evaluate::{CallInfo, Value};
 use crate::signature::Signature;
 
 pub mod classified;
@@ -21,8 +18,8 @@ pub trait Command: Send + Sync {
         &self,
         call_info: CallInfo,
         registry: &CommandRegistry,
-        input: Stdio,
-    ) -> Result<Stdout, ShellError>;
+        input: Option<Vec<Value>>,
+    ) -> Result<Option<Vec<Value>>, ShellError>;
 
     fn is_binary(&self) -> bool {
         false

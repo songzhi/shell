@@ -1,4 +1,5 @@
 use crate::parser::span::{HasSpan, Span};
+use crate::parser::token::{SpannedToken, Token};
 
 pub type ExternalArg = String;
 
@@ -9,8 +10,24 @@ pub struct ExternalArgs {
 }
 
 impl ExternalArgs {
-    pub fn iter(&self) -> impl Iterator<Item = &ExternalArg> {
+    pub fn iter(&self) -> impl Iterator<Item=&ExternalArg> {
         self.list.iter()
+    }
+    pub fn from_tokens(tokens: &mut impl Iterator<Item=SpannedToken>, source: &str, span: Span) -> Self {
+        let list = tokens
+            .map(|spanned| match spanned.item {
+                Token::String(s) => Some(s.string(source)),
+                Token::Bare | Token::ExternalWord | Token::Flag(_) | Token::GlobPattern => {
+                    Some(spanned.span.string(source))
+                }
+                Token::Pipeline(_) | Token::Separator | Token::Whitespace => None,
+            })
+            .flatten()
+            .collect::<Vec<_>>();
+        Self {
+            list,
+            span,
+        }
     }
 }
 
