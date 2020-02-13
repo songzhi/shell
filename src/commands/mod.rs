@@ -4,6 +4,7 @@ use std::sync::Arc;
 use serde::Deserialize;
 
 pub use cd::Cd;
+pub use count::Count;
 pub use cp::Cp;
 pub use exit::Exit;
 pub use help::Help;
@@ -20,13 +21,13 @@ use crate::signature::Signature;
 
 pub mod cd;
 pub mod classified;
+pub mod count;
 pub mod cp;
 pub mod exit;
 pub mod help;
 pub mod ls;
 pub mod mkdir;
 pub mod pwd;
-
 pub trait Command: Send + Sync {
     fn name(&self) -> &str;
 

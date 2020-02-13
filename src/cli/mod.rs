@@ -2,9 +2,7 @@ use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
 use rustyline::error::ReadlineError;
-use rustyline::{
-    self, At, Cmd, ColorMode, CompletionType, Config, Editor, KeyPress, Movement, Word,
-};
+use rustyline::{self, At, Cmd, ColorMode, Config, Editor, KeyPress, Movement, Word};
 
 use crate::commands::classified::pipeline::run_pipeline;
 use crate::commands::{BoxedCommand, Command};
@@ -33,11 +31,17 @@ pub fn cli() -> Result<(), ShellError> {
         KeyPress::ControlRight,
         Cmd::Move(Movement::ForwardWord(1, At::AfterEnd, Word::Vi)),
     );
+    let cc = context.ctrl_c.clone();
+    ctrlc::set_handler(move || {
+        cc.store(true, Ordering::SeqCst);
+    })
+    .expect("Error setting Ctrl-C handler");
     #[cfg(windows)]
     {
         let _ = ansi_term::enable_ansi_support();
     }
     let mut ctrlcbreak = false;
+    println!("Welcome to Li's shell, type help for more info.");
     loop {
         if context.ctrl_c.load(Ordering::SeqCst) {
             context.ctrl_c.store(false, Ordering::SeqCst);
@@ -52,21 +56,24 @@ pub fn cli() -> Result<(), ShellError> {
                 "> ".to_string()
             }
         };
-        let mut initial_command = Some(String::new());
-        let mut readline = Err(ReadlineError::Eof);
-        while let Some(ref cmd) = initial_command {
-            readline = rl.readline_with_initial(&prompt, (&cmd, ""));
-            initial_command = None;
-        }
+        //        let prompt = colored_prompt.trim_end();
+        //        let mut initial_command = Some(String::new());
+        //        let mut readline = Err(ReadlineError::Eof);
+        //        while let Some(ref cmd) = initial_command {
+        //            readline = rl.readline_with_initial(&prompt, (&cmd, ""));
+        //            initial_command = None;
+        //        }
+        //        rl.helper_mut().expect("No helper").colored_prompt = colored_prompt;
+        let readline = rl.readline(&prompt);
         let line = process_line(readline, &mut context, false);
         match line {
             LineResult::Success(_) => {}
             LineResult::Error(l, err) => match &err.error {
                 ProximateShellError::ParseError(_, _) => {
-                    println!("{}\n{}", l, err);
+                    println!("\x1b[31m{}\n{}\x1b[0m", l, err);
                 }
                 ProximateShellError::RuntimeError(_) => {
-                    println!("{}", err);
+                    println!("\x1b[31m{}\x1b[0m", err);
                 }
             },
             LineResult::CtrlC => {
@@ -97,7 +104,7 @@ enum LineResult {
 fn process_line(
     readline: Result<String, ReadlineError>,
     ctx: &mut Context,
-    redirect_stdin: bool,
+    _redirect_stdin: bool,
 ) -> LineResult {
     match &readline {
         Ok(line) if line.trim().is_empty() => LineResult::Success(line.clone()),
@@ -217,6 +224,7 @@ fn create_default_context() -> Context {
             command(Exit),
             command(Help),
             command(Pwd),
+            command(Count),
         ])
     }
     context

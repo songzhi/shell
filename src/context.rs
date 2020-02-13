@@ -18,11 +18,11 @@ pub struct CommandRegistry {
 }
 
 impl CommandRegistry {
-    pub(crate) fn has(&self, name: &str) -> bool {
+    pub fn has(&self, name: &str) -> bool {
         let registry = self.registry.lock();
         registry.contains_key(name)
     }
-    pub(crate) fn get(&self, name: &str) -> Option<Signature> {
+    pub fn get(&self, name: &str) -> Option<Signature> {
         let registry = self.registry.lock();
         registry.get(name).map(|command| command.signature())
     }
@@ -31,7 +31,7 @@ impl CommandRegistry {
         CommandRegistry::default()
     }
 
-    pub(crate) fn get_command(&self, name: &str) -> Option<BoxedCommand> {
+    pub fn get_command(&self, name: &str) -> Option<BoxedCommand> {
         let registry = self.registry.lock();
         registry.get(name).cloned()
     }
@@ -75,7 +75,7 @@ impl Context {
         }
     }
 
-    pub(crate) fn get_command(&self, name: &str) -> Option<BoxedCommand> {
+    pub fn get_command(&self, name: &str) -> Option<BoxedCommand> {
         self.registry.get_command(name)
     }
 

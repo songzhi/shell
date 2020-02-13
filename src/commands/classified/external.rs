@@ -8,7 +8,7 @@ use crate::parser::command::classified::external::ExternalCommand;
 
 pub(crate) fn run_external_command(
     command: ExternalCommand,
-    context: &mut Context,
+    _context: &mut Context,
     input: Option<Vec<Value>>,
     is_last: bool,
 ) -> Result<Option<Vec<Value>>, ShellError> {
@@ -152,6 +152,7 @@ fn argument_is_quoted(argument: &str) -> bool {
         || (argument.starts_with('\'') && argument.ends_with('\'')))
 }
 
+#[allow(unused)]
 fn add_quotes(argument: &str) -> String {
     format!("'{}'", argument)
 }

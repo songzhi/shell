@@ -3,6 +3,7 @@ use nom::branch::alt;
 use nom::bytes::complete::{tag, take_while1};
 use nom::character::complete::{char, none_of, space1};
 use nom::combinator::opt;
+#[allow(unused)]
 use nom::error::ParseError;
 use nom::multi::{many0, many1};
 use nom::sequence::tuple;
@@ -338,16 +339,16 @@ pub fn token_list(input: NomSpan) -> IResult<NomSpan, Spanned<Vec<SpannedToken>>
 #[tracable_parser]
 pub fn spaced_token_list(input: NomSpan) -> IResult<NomSpan, Spanned<Vec<SpannedToken>>> {
     let start = input.offset;
-    let (input, pre_ws) = opt(any_space)(input)?;
+    let (input, _pre_ws) = opt(any_space)(input)?;
     let (input, items) = token_list(input)?;
     let (input, post_ws) = opt(any_space)(input)?;
     let end = input.offset;
 
     let mut out = vec![];
 
-    if let Some(pre_ws) = pre_ws {
-        out.extend(pre_ws)
-    }
+    //    if let Some(pre_ws) = pre_ws {
+    //        out.extend(pre_ws)
+    //    }
     out.extend(items.item);
     if let Some(post_ws) = post_ws {
         out.extend(post_ws)

@@ -55,7 +55,7 @@ impl super::Shell for FilesystemShell {
         };
         let mut paths = match glob::glob(&path.to_string_lossy()) {
             Ok(g) => Ok(g),
-            Err(e) => Err(ShellError::runtime_error("Invalid File or Pattern")),
+            Err(_) => Err(ShellError::runtime_error("Invalid File or Pattern")),
         }?
         .peekable();
         if paths.peek().is_none() {
@@ -108,7 +108,7 @@ impl super::Shell for FilesystemShell {
         }
     }
 
-    fn cp(&self, args: CopyArgs) -> Result<Option<Vec<Value>>, ShellError> {
+    fn cp(&self, _args: CopyArgs) -> Result<Option<Vec<Value>>, ShellError> {
         unimplemented!()
     }
 
@@ -139,7 +139,7 @@ impl super::Shell for FilesystemShell {
             .to_string()
     }
     fn pwd(&self) -> Result<Option<Vec<Value>>, ShellError> {
-        Ok(None)
+        Ok(Some(vec![Value::String(self.path())]))
     }
 }
 

@@ -1,12 +1,8 @@
-use std::sync::atomic::AtomicBool;
-use std::sync::Arc;
-
 use derive_new::new;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
 use crate::evaluate::value::Value;
-use crate::shell::Shell;
 
 /// Associated information for the call of a command, including the args passed to the command and a tag that spans the name of the command being called
 #[derive(Deserialize, Serialize, Debug, Clone, Eq, PartialEq)]

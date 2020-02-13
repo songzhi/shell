@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use indexmap::IndexMap;
 
 pub(crate) use call_info::CallInfo;
@@ -30,8 +28,8 @@ fn evaluate_expr(spanned: &SpannedToken, source: &str) -> Result<Value, ShellErr
 
 pub(crate) fn evaluate_args(
     call: hir::Call,
-    command: BoxedCommand,
-    registry: &CommandRegistry,
+    _command: BoxedCommand,
+    _registry: &CommandRegistry,
     source: &str,
 ) -> Result<EvaluatedArgs, ShellError> {
     let positional: Result<Option<Vec<_>>, _> = call

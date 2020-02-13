@@ -1,5 +1,7 @@
 use shell::cli::cli;
 
 fn main() {
-    cli();
+    if let Err(err) = cli() {
+        println!("{}", err);
+    }
 }

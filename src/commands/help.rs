@@ -61,7 +61,7 @@ impl Command for Help {
                 }
             }
             _ => {
-                let msg = r#"Welcome to shell.
+                let msg = r#"Welcome to Li's shell.
 
 Here are some tips to help you get started.
   * help commands - list all available commands
@@ -72,7 +72,7 @@ Here are some tips to help you get started.
     }
 }
 
-pub(crate) fn get_help(cmd_name: &str, cmd_sig: Signature) -> impl Into<Vec<Value>> {
+pub(crate) fn get_help(_cmd_name: &str, cmd_sig: Signature) -> impl Into<Vec<Value>> {
     let mut help = VecDeque::new();
     let mut long_desc = String::new();
 

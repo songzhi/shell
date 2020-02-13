@@ -20,7 +20,7 @@ impl ShellError {
     ) -> ShellError {
         let reason = Some(String::from("parse error"));
         match error {
-            nom::Err::Incomplete(s) => {
+            nom::Err::Incomplete(_) => {
                 ProximateShellError::ParseError(Span::unknown(), reason).start()
             }
             nom::Err::Failure(span) | nom::Err::Error(span) => {
