@@ -47,7 +47,7 @@ pub(crate) fn evaluate_args(
             let mut results = IndexMap::new();
             for (name, value) in n.named.iter() {
                 match value {
-                    hir::NamedValue::PresentSwitch(tag) => {
+                    hir::NamedValue::PresentSwitch(_) => {
                         results.insert(name.clone(), Value::Boolean(true));
                     }
                     hir::NamedValue::Value(ref expr) => {

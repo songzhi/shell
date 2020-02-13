@@ -118,7 +118,7 @@ impl Signature {
             usage: String::new(),
             positional: vec![],
             rest_positional: None,
-            named: indexmap::indexmap! {"help".into() => (NamedType::Switch, "Display this help message".into())},
+            named: indexmap::indexmap! {},
         }
     }
 

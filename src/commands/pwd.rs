@@ -5,29 +5,28 @@ use crate::commands::Command;
 use crate::context::CommandRegistry;
 use crate::error::ShellError;
 use crate::evaluate::{CallInfo, Value};
-use crate::parser::syntax_shape::SyntaxShape;
 use crate::shell::Shell;
 use crate::signature::Signature;
 
-pub struct Exit;
+pub struct Pwd;
 
-impl Command for Exit {
+impl Command for Pwd {
     fn name(&self) -> &str {
-        "exit"
+        "pwd"
     }
 
     fn usage(&self) -> &str {
-        "Exit the current shell (or all shells)"
+        "Output the current working directory."
     }
+
     fn run(
         &self,
-        _call_info: CallInfo,
-        _input: Option<Vec<Value>>,
-        _ctrl_c: Arc<AtomicBool>,
-        _shell: Arc<dyn Shell>,
-        _registry: &CommandRegistry,
+        call_info: CallInfo,
+        input: Option<Vec<Value>>,
+        ctrl_c: Arc<AtomicBool>,
+        shell: Arc<dyn Shell>,
+        registry: &CommandRegistry,
     ) -> Result<Option<Vec<Value>>, ShellError> {
-        // TODO: save history
-        std::process::exit(0);
+        unimplemented!()
     }
 }

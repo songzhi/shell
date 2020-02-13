@@ -61,7 +61,14 @@ pub fn cli() -> Result<(), ShellError> {
         let line = process_line(readline, &mut context, false);
         match line {
             LineResult::Success(_) => {}
-            LineResult::Error(l, err) => println!("{}\n{}", l, err),
+            LineResult::Error(l, err) => match &err.error {
+                ProximateShellError::ParseError(_, _) => {
+                    println!("{}\n{}", l, err);
+                }
+                ProximateShellError::RuntimeError(_) => {
+                    println!("{}", err);
+                }
+            },
             LineResult::CtrlC => {
                 if ctrlcbreak {
                     std::process::exit(0);
@@ -208,6 +215,8 @@ fn create_default_context() -> Context {
             command(Cd),
             command(Mkdir),
             command(Exit),
+            command(Help),
+            command(Pwd),
         ])
     }
     context

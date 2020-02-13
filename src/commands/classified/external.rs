@@ -81,27 +81,30 @@ pub(crate) fn run_external_command(
                     return Err(ShellError::runtime_error(message));
                 }
             }
-            return if !is_last {
-                let stdout = if let Some(stdout) = child.stdout.take() {
-                    stdout
-                } else {
-                    return Err(ShellError::runtime_error("can't redirect stdout"));
-                };
-                let mut buf_reader = BufReader::new(stdout);
-                let mut results = vec![];
-                let mut buf = String::new();
-                while let Ok(n) = buf_reader.read_line(&mut buf) {
-                    if n == 0 {
-                        break;
-                    }
-                    results.push(Value::String(buf.as_str().to_string()));
-                    buf.clear();
-                }
-                Ok(Some(results))
-            } else {
-                Ok(None)
-            };
         }
+        return if !is_last {
+            let stdout = if let Some(stdout) = child.stdout.take() {
+                stdout
+            } else {
+                return Err(ShellError::runtime_error("can't redirect stdout"));
+            };
+            let mut buf_reader = BufReader::new(stdout);
+            let mut results = vec![];
+            let mut buf = String::new();
+            while let Ok(n) = buf_reader.read_line(&mut buf) {
+                if n == 0 {
+                    break;
+                }
+                results.push(Value::String(buf.as_str().to_string()));
+                buf.clear();
+            }
+            Ok(Some(results))
+        } else {
+            child
+                .wait()
+                .map_err(|_| ShellError::runtime_error("command's not running"))
+                .map(|_| None)
+        };
     }
     Ok(None)
 }

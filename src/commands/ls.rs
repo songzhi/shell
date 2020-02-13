@@ -5,6 +5,7 @@ use std::sync::Arc;
 use serde::Deserialize;
 
 use crate::commands::{Command, RunnableContext};
+use crate::context::CommandRegistry;
 use crate::error::ShellError;
 use crate::evaluate::{CallInfo, Value};
 use crate::parser::syntax_shape::SyntaxShape;
@@ -24,11 +25,13 @@ impl Command for Ls {
     }
 
     fn signature(&self) -> Signature {
-        Signature::build("ls").optional(
-            "path",
-            SyntaxShape::Pattern,
-            "a path to get the directory contents from",
-        )
+        Signature::build("ls")
+            .optional(
+                "path",
+                SyntaxShape::Pattern,
+                "a path to get the directory contents from",
+            )
+            .desc(self.usage())
     }
 
     fn usage(&self) -> &str {
@@ -41,6 +44,7 @@ impl Command for Ls {
         input: Option<Vec<Value>>,
         ctrl_c: Arc<AtomicBool>,
         shell: Arc<dyn Shell>,
+        _registry: &CommandRegistry,
     ) -> Result<Option<Vec<Value>>, ShellError> {
         call_info.process(&shell, ctrl_c, ls, input)?.run()
     }

@@ -5,6 +5,7 @@ use std::sync::Arc;
 use serde::Deserialize;
 
 use crate::commands::{Command, RunnableContext};
+use crate::context::CommandRegistry;
 use crate::error::ShellError;
 use crate::evaluate::{CallInfo, Value};
 use crate::parser::syntax_shape::SyntaxShape;
@@ -24,11 +25,13 @@ impl Command for Cd {
     }
 
     fn signature(&self) -> Signature {
-        Signature::build(self.name()).optional(
-            "destination",
-            SyntaxShape::Path,
-            "the directory to change to",
-        )
+        Signature::build(self.name())
+            .optional(
+                "destination",
+                SyntaxShape::Path,
+                "the directory to change to",
+            )
+            .desc(self.usage())
     }
 
     fn usage(&self) -> &str {
@@ -41,6 +44,7 @@ impl Command for Cd {
         input: Option<Vec<Value>>,
         ctrl_c: Arc<AtomicBool>,
         shell: Arc<dyn Shell>,
+        _registry: &CommandRegistry,
     ) -> Result<Option<Vec<Value>>, ShellError> {
         call_info.process(&shell, ctrl_c, cd, input)?.run()
     }

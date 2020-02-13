@@ -5,6 +5,7 @@ use std::sync::Arc;
 use serde::Deserialize;
 
 use crate::commands::{Command, RunnableContext};
+use crate::context::CommandRegistry;
 use crate::error::ShellError;
 use crate::evaluate::{CallInfo, Value};
 use crate::parser::syntax_shape::SyntaxShape;
@@ -31,6 +32,7 @@ impl Command for Cp {
         Signature::build("cp")
             .required("src", SyntaxShape::Pattern, "the place to copy from")
             .required("dst", SyntaxShape::Path, "the place to copy to")
+            .desc(self.usage())
     }
     fn run(
         &self,
@@ -38,6 +40,7 @@ impl Command for Cp {
         input: Option<Vec<Value>>,
         ctrl_c: Arc<AtomicBool>,
         shell: Arc<dyn Shell>,
+        _registry: &CommandRegistry,
     ) -> Result<Option<Vec<Value>>, ShellError> {
         call_info.process(&shell, ctrl_c, cp, input)?.run()
     }

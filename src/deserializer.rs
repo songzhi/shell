@@ -125,7 +125,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut ConfigDeserializer<'de> {
             Value::Boolean(b) => Some(b as i64),
             Value::List(_) | Value::Nothing | Value::Path(_) | Value::Pattern(_) => None,
         }
-        .ok_or(ShellError::runtime_error("expected Integer"))?;
+        .ok_or_else(|| ShellError::runtime_error("expected Integer"))?;
         visitor.visit_i64(val)
     }
 
@@ -176,7 +176,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut ConfigDeserializer<'de> {
             Value::Boolean(b) => Some(b as i8 as f64),
             Value::List(_) | Value::Nothing | Value::Path(_) | Value::Pattern(_) => None,
         }
-        .ok_or(ShellError::runtime_error("expected Number"))?;
+        .ok_or_else(|| ShellError::runtime_error("expected Number"))?;
         visitor.visit_f64(val)
     }
 

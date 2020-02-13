@@ -92,6 +92,12 @@ impl Context {
         let call_info = CallInfo {
             args: evaluate_args(args, command.clone(), &self.registry, source)?,
         };
-        command.run(call_info, input, self.ctrl_c.clone(), self.shell.clone())
+        command.run(
+            call_info,
+            input,
+            self.ctrl_c.clone(),
+            self.shell.clone(),
+            &self.registry,
+        )
     }
 }

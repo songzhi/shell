@@ -7,8 +7,8 @@ use crate::parser::tracable::TracableContext;
 /// creating a cause chain.
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Clone, Serialize, Deserialize, Hash)]
 pub struct ShellError {
-    error: ProximateShellError,
-    cause: Option<Box<ShellError>>,
+    pub error: ProximateShellError,
+    pub cause: Option<Box<ShellError>>,
 }
 
 impl ShellError {
@@ -45,6 +45,12 @@ impl serde::de::Error for ShellError {
         T: std::fmt::Display,
     {
         ShellError::runtime_error(msg.to_string())
+    }
+}
+
+impl From<std::io::Error> for ShellError {
+    fn from(e: std::io::Error) -> Self {
+        Self::runtime_error(e.to_string())
     }
 }
 
