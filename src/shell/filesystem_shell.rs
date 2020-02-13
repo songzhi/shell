@@ -5,7 +5,7 @@ pub struct FilesystemShell {}
 
 impl FilesystemShell {
     pub fn new() -> Self {
-        unimplemented!()
+        Self {}
     }
 }
 

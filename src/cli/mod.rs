@@ -1,6 +1,14 @@
+use std::sync::atomic::Ordering;
+use std::sync::Arc;
+
 use rustyline::error::ReadlineError;
+use rustyline::{
+    self, config::Configurer, config::EditMode, At, Cmd, ColorMode, CompletionType, Config, Editor,
+    KeyPress, Movement, Word,
+};
 
 use crate::commands::classified::pipeline::run_pipeline;
+use crate::commands::{BoxedCommand, Command};
 use crate::context::Context;
 use crate::error::{ProximateShellError, ShellError};
 use crate::parser;
@@ -12,6 +20,65 @@ use crate::parser::span::HasSpan;
 use crate::parser::token::{SpannedToken, Token};
 
 pub mod colors;
+
+pub fn cli() -> Result<(), ShellError> {
+    let mut context = create_default_context();
+    let config = Config::builder().color_mode(ColorMode::Forced).build();
+    let mut rl: Editor<()> = Editor::with_config(config);
+    // add key bindings to move over a whole word with Ctrl+ArrowLeft and Ctrl+ArrowRight
+    rl.bind_sequence(
+        KeyPress::ControlLeft,
+        Cmd::Move(Movement::BackwardWord(1, Word::Vi)),
+    );
+    rl.bind_sequence(
+        KeyPress::ControlRight,
+        Cmd::Move(Movement::ForwardWord(1, At::AfterEnd, Word::Vi)),
+    );
+    #[cfg(windows)]
+    {
+        let _ = ansi_term::enable_ansi_support();
+    }
+    let mut ctrlcbreak = false;
+    loop {
+        if context.ctrl_c.load(Ordering::SeqCst) {
+            context.ctrl_c.store(false, Ordering::SeqCst);
+            continue;
+        }
+        let cwd = std::env::current_dir().expect("can't get current dir");
+        let colored_prompt = format!("\x1b[32m{}\x1b[m> ", cwd.to_string_lossy().to_string());
+        let prompt = {
+            if let Ok(bytes) = strip_ansi_escapes::strip(&colored_prompt) {
+                String::from_utf8_lossy(&bytes).to_string()
+            } else {
+                "> ".to_string()
+            }
+        };
+        let mut initial_command = Some(String::new());
+        let mut readline = Err(ReadlineError::Eof);
+        while let Some(ref cmd) = initial_command {
+            readline = rl.readline_with_initial(&prompt, (&cmd, ""));
+            initial_command = None;
+        }
+        let line = process_line(readline, &mut context, false);
+        match line {
+            LineResult::Success(_) => {}
+            LineResult::Error(_, _) => {}
+            LineResult::CtrlC => {
+                if ctrlcbreak {
+                    std::process::exit(0);
+                } else {
+                    ctrlcbreak = true;
+                    continue;
+                }
+            }
+            LineResult::Break => {
+                break;
+            }
+        }
+        ctrlcbreak = false;
+    }
+    Ok(())
+}
 
 enum LineResult {
     Success(String),
@@ -46,7 +113,7 @@ fn process_line(
         }
         Err(ReadlineError::Interrupted) => LineResult::CtrlC,
         Err(ReadlineError::Eof) => LineResult::Break,
-        Err(err) => LineResult::Break,
+        Err(_) => LineResult::Break,
     }
 }
 
@@ -126,4 +193,17 @@ pub fn classify_pipeline(
         }
         _ => panic!("expected token"),
     }
+}
+
+fn create_default_context() -> Context {
+    let mut context = Context::basic();
+    #[inline]
+    fn command(c: impl Command + 'static) -> BoxedCommand {
+        Arc::new(c)
+    }
+    {
+        use crate::commands::*;
+        context.add_commands(vec![command(Ls)])
+    }
+    context
 }

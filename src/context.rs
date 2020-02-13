@@ -14,7 +14,7 @@ use crate::signature::Signature;
 
 #[derive(Clone, Default)]
 pub struct CommandRegistry {
-    registry: Arc<Mutex<IndexMap<String, Arc<BoxedCommand>>>>,
+    registry: Arc<Mutex<IndexMap<String, BoxedCommand>>>,
 }
 
 impl CommandRegistry {
@@ -31,17 +31,17 @@ impl CommandRegistry {
         CommandRegistry::default()
     }
 
-    pub(crate) fn get_command(&self, name: &str) -> Option<Arc<BoxedCommand>> {
+    pub(crate) fn get_command(&self, name: &str) -> Option<BoxedCommand> {
         let registry = self.registry.lock();
         registry.get(name).cloned()
     }
 
-    pub(crate) fn expect_command(&self, name: &str) -> Result<Arc<BoxedCommand>, ShellError> {
+    pub(crate) fn expect_command(&self, name: &str) -> Result<BoxedCommand, ShellError> {
         self.get_command(name)
             .ok_or_else(|| ShellError::runtime_error(format!("Could not load command: {}", name)))
     }
 
-    pub(crate) fn insert(&mut self, name: impl Into<String>, command: Arc<BoxedCommand>) {
+    pub(crate) fn insert(&mut self, name: impl Into<String>, command: BoxedCommand) {
         let mut registry = self.registry.lock();
         registry.insert(name.into(), command);
     }
@@ -57,7 +57,7 @@ pub struct Context {
     pub registry: CommandRegistry,
     pub current_errors: Arc<Mutex<Vec<ShellError>>>,
     pub ctrl_c: Arc<AtomicBool>,
-    pub(crate) shell: Arc<Box<dyn Shell + Send>>,
+    pub(crate) shell: Arc<dyn Shell>,
 }
 
 impl Context {
@@ -66,25 +66,25 @@ impl Context {
             registry: CommandRegistry::empty(),
             current_errors: Arc::new(Mutex::new(Vec::new())),
             ctrl_c: Arc::new(AtomicBool::new(false)),
-            shell: Arc::new(Box::new(FilesystemShell::new())),
+            shell: Arc::new(FilesystemShell::new()),
         }
     }
-    pub fn add_commands(&mut self, commands: Vec<Arc<BoxedCommand>>) {
+    pub fn add_commands(&mut self, commands: Vec<BoxedCommand>) {
         for command in commands {
             self.registry.insert(command.name().to_string(), command);
         }
     }
 
-    pub(crate) fn get_command(&self, name: &str) -> Option<Arc<BoxedCommand>> {
+    pub(crate) fn get_command(&self, name: &str) -> Option<BoxedCommand> {
         self.registry.get_command(name)
     }
 
-    pub(crate) fn expect_command(&self, name: &str) -> Result<Arc<BoxedCommand>, ShellError> {
+    pub(crate) fn expect_command(&self, name: &str) -> Result<BoxedCommand, ShellError> {
         self.registry.expect_command(name)
     }
     pub(crate) fn run_command(
         &mut self,
-        command: Arc<BoxedCommand>,
+        command: BoxedCommand,
         args: Call,
         source: &str,
         input: Option<Vec<Value>>,
@@ -92,6 +92,6 @@ impl Context {
         let call_info = CallInfo {
             args: evaluate_args(args, command.clone(), &self.registry, source)?,
         };
-        command.run(call_info, &self.registry, input)
+        command.run(call_info, input, self.ctrl_c.clone(), self.shell.clone())
     }
 }

@@ -30,11 +30,10 @@ fn evaluate_expr(spanned: &SpannedToken, source: &str) -> Result<Value, ShellErr
 
 pub(crate) fn evaluate_args(
     call: hir::Call,
-    command: Arc<BoxedCommand>,
+    command: BoxedCommand,
     registry: &CommandRegistry,
     source: &str,
 ) -> Result<EvaluatedArgs, ShellError> {
-    let signature = command.signature();
     let positional: Result<Option<Vec<_>>, _> = call
         .positional
         .as_ref()
@@ -45,7 +44,7 @@ pub(crate) fn evaluate_args(
         .named
         .as_ref()
         .map(|n| {
-            let results = IndexMap::new();
+            let mut results = IndexMap::new();
             for (name, value) in n.named.iter() {
                 match value {
                     hir::NamedValue::PresentSwitch(tag) => {
