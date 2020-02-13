@@ -72,7 +72,7 @@ impl std::fmt::Display for ProximateShellError {
             "{}",
             match self {
                 ProximateShellError::ParseError(span, reason) => {
-                    let reason = reason.clone().unwrap_or(String::new());
+                    let reason = reason.clone().unwrap_or_default();
                     format!(
                         "{}{}{}",
                         " ".repeat(span.start()),

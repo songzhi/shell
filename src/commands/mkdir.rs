@@ -11,30 +11,28 @@ use crate::parser::syntax_shape::SyntaxShape;
 use crate::shell::Shell;
 use crate::signature::Signature;
 
-#[derive(Deserialize, Debug)]
-pub struct LsArgs {
-    pub path: Option<PathBuf>,
+#[derive(Deserialize)]
+pub struct MkdirArgs {
+    pub dir: PathBuf,
 }
 
-pub struct Ls;
+pub struct Mkdir;
 
-impl Command for Ls {
+impl Command for Mkdir {
     fn name(&self) -> &str {
-        "ls"
-    }
-
-    fn signature(&self) -> Signature {
-        Signature::build("ls").optional(
-            "path",
-            SyntaxShape::Pattern,
-            "a path to get the directory contents from",
-        )
+        "mkdir"
     }
 
     fn usage(&self) -> &str {
-        "View the contents of the current or given path."
+        "Make directories, creates intermediary directories as required."
     }
-
+    fn signature(&self) -> Signature {
+        Signature::build("mkdir").required(
+            "dir",
+            SyntaxShape::Path,
+            "the name of the path to create",
+        )
+    }
     fn run(
         &self,
         call_info: CallInfo,
@@ -42,10 +40,10 @@ impl Command for Ls {
         ctrl_c: Arc<AtomicBool>,
         shell: Arc<dyn Shell>,
     ) -> Result<Option<Vec<Value>>, ShellError> {
-        call_info.process(&shell, ctrl_c, ls, input)?.run()
+        call_info.process(&shell, ctrl_c, mkdir, input)?.run()
     }
 }
 
-fn ls(args: LsArgs, ctx: &RunnableContext) -> Result<Option<Vec<Value>>, ShellError> {
-    ctx.shell.ls(args, ctx)
+fn mkdir(args: MkdirArgs, ctx: &RunnableContext) -> Result<Option<Vec<Value>>, ShellError> {
+    ctx.shell.mkdir(args)
 }

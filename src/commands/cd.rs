@@ -11,28 +11,28 @@ use crate::parser::syntax_shape::SyntaxShape;
 use crate::shell::Shell;
 use crate::signature::Signature;
 
-#[derive(Deserialize, Debug)]
-pub struct LsArgs {
-    pub path: Option<PathBuf>,
+#[derive(Deserialize)]
+pub struct CdArgs {
+    pub dst: Option<PathBuf>,
 }
 
-pub struct Ls;
+pub struct Cd;
 
-impl Command for Ls {
+impl Command for Cd {
     fn name(&self) -> &str {
-        "ls"
+        "cd"
     }
 
     fn signature(&self) -> Signature {
-        Signature::build("ls").optional(
-            "path",
-            SyntaxShape::Pattern,
-            "a path to get the directory contents from",
+        Signature::build(self.name()).optional(
+            "destination",
+            SyntaxShape::Path,
+            "the directory to change to",
         )
     }
 
     fn usage(&self) -> &str {
-        "View the contents of the current or given path."
+        "Change to a new path."
     }
 
     fn run(
@@ -42,10 +42,10 @@ impl Command for Ls {
         ctrl_c: Arc<AtomicBool>,
         shell: Arc<dyn Shell>,
     ) -> Result<Option<Vec<Value>>, ShellError> {
-        call_info.process(&shell, ctrl_c, ls, input)?.run()
+        call_info.process(&shell, ctrl_c, cd, input)?.run()
     }
 }
 
-fn ls(args: LsArgs, ctx: &RunnableContext) -> Result<Option<Vec<Value>>, ShellError> {
-    ctx.shell.ls(args, ctx)
+fn cd(args: CdArgs, ctx: &RunnableContext) -> Result<Option<Vec<Value>>, ShellError> {
+    ctx.shell.cd(args)
 }

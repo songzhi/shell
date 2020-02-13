@@ -3,8 +3,7 @@ use std::sync::Arc;
 
 use rustyline::error::ReadlineError;
 use rustyline::{
-    self, config::Configurer, config::EditMode, At, Cmd, ColorMode, CompletionType, Config, Editor,
-    KeyPress, Movement, Word,
+    self, At, Cmd, ColorMode, CompletionType, Config, Editor, KeyPress, Movement, Word,
 };
 
 use crate::commands::classified::pipeline::run_pipeline;
@@ -45,7 +44,7 @@ pub fn cli() -> Result<(), ShellError> {
             continue;
         }
         let cwd = std::env::current_dir().expect("can't get current dir");
-        let colored_prompt = format!("\x1b[32m{}\x1b[m> ", cwd.to_string_lossy().to_string());
+        let colored_prompt = format!("\x1b[32m{}\x1b[0m> ", cwd.to_string_lossy().to_string());
         let prompt = {
             if let Ok(bytes) = strip_ansi_escapes::strip(&colored_prompt) {
                 String::from_utf8_lossy(&bytes).to_string()
@@ -62,12 +61,13 @@ pub fn cli() -> Result<(), ShellError> {
         let line = process_line(readline, &mut context, false);
         match line {
             LineResult::Success(_) => {}
-            LineResult::Error(_, _) => {}
+            LineResult::Error(l, err) => println!("{}\n{}", l, err),
             LineResult::CtrlC => {
                 if ctrlcbreak {
                     std::process::exit(0);
                 } else {
                     ctrlcbreak = true;
+                    println!("press ctrl+c again to exit.");
                     continue;
                 }
             }
@@ -203,7 +203,12 @@ fn create_default_context() -> Context {
     }
     {
         use crate::commands::*;
-        context.add_commands(vec![command(Ls)])
+        context.add_commands(vec![
+            command(Ls),
+            command(Cd),
+            command(Mkdir),
+            command(Exit),
+        ])
     }
     context
 }

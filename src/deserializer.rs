@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use bigdecimal::ToPrimitive;
 use de::Visitor;
 use serde::de;

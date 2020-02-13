@@ -3,17 +3,24 @@ use std::sync::Arc;
 
 use serde::Deserialize;
 
+pub use cd::Cd;
+pub use cp::Cp;
+pub use exit::Exit;
 pub use ls::Ls;
+pub use mkdir::Mkdir;
 
-use crate::context::CommandRegistry;
 use crate::deserializer::ConfigDeserializer;
 use crate::error::ShellError;
 use crate::evaluate::{CallInfo, Value};
 use crate::shell::Shell;
 use crate::signature::Signature;
 
+pub mod cd;
 pub mod classified;
+pub mod cp;
+pub mod exit;
 pub mod ls;
+pub mod mkdir;
 
 pub trait Command: Send + Sync {
     fn name(&self) -> &str;

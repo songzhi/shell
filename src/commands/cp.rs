@@ -11,30 +11,27 @@ use crate::parser::syntax_shape::SyntaxShape;
 use crate::shell::Shell;
 use crate::signature::Signature;
 
-#[derive(Deserialize, Debug)]
-pub struct LsArgs {
-    pub path: Option<PathBuf>,
+#[derive(Deserialize)]
+pub struct CopyArgs {
+    pub src: PathBuf,
+    pub dst: PathBuf,
 }
 
-pub struct Ls;
+pub struct Cp;
 
-impl Command for Ls {
+impl Command for Cp {
     fn name(&self) -> &str {
-        "ls"
-    }
-
-    fn signature(&self) -> Signature {
-        Signature::build("ls").optional(
-            "path",
-            SyntaxShape::Pattern,
-            "a path to get the directory contents from",
-        )
+        "cp"
     }
 
     fn usage(&self) -> &str {
-        "View the contents of the current or given path."
+        "Copy files."
     }
-
+    fn signature(&self) -> Signature {
+        Signature::build("cp")
+            .required("src", SyntaxShape::Pattern, "the place to copy from")
+            .required("dst", SyntaxShape::Path, "the place to copy to")
+    }
     fn run(
         &self,
         call_info: CallInfo,
@@ -42,10 +39,10 @@ impl Command for Ls {
         ctrl_c: Arc<AtomicBool>,
         shell: Arc<dyn Shell>,
     ) -> Result<Option<Vec<Value>>, ShellError> {
-        call_info.process(&shell, ctrl_c, ls, input)?.run()
+        call_info.process(&shell, ctrl_c, cp, input)?.run()
     }
 }
 
-fn ls(args: LsArgs, ctx: &RunnableContext) -> Result<Option<Vec<Value>>, ShellError> {
-    ctx.shell.ls(args, ctx)
+fn cp(args: CopyArgs, ctx: &RunnableContext) -> Result<Option<Vec<Value>>, ShellError> {
+    ctx.shell.cp(args)
 }
