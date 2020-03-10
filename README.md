@@ -1,3 +1,5 @@
+### 参考了[nushell](https://www.nushell.sh/),可视此为其拙劣简化版。
+
 ##  实验目的
 探索、理解并掌握操作系统命令解释器的设计原理和实现机制，基于 Linux 内核进行相
 应命令解释程序的设计和实现，并在 Linux 操作系统平台上加以测试验证。
@@ -25,8 +27,38 @@ Linux 命令解释程序功能设计要求：
    算机系统信息等凸显个人标记特征的信息；
    3. 实验报告文档提交格式可为 Word 文档、WPS 文档或 PDF 文档。
 
-## 设计目标
-* 支持除字符串以外的类型
-* async
-* path env
-* history
+## 实现功能
+### 命令
+* ls
+* cd
+* mkdir
+* pwd
+* exit
+* help
+* count
+### 流程
+所有命令都实现了`Command` trait，并各有`Signature`结构体描述其名称参数用途等等（其中参数分为位置参数和flag参数，又各分为强制和可选，位置参数还可以是无限个元素），  
+然后保存在`CommandRegistry`中，供以后使用。
+程序运行之后，首先创建一个`Context`结构体，其中保存着之前的`CommandRegistry`等数据。然后经过一些其他初始化操作之后，进入循环。
+
+使用[rustyline](https://docs.rs/rustyline/6.0.0/rustyline)读取一行，再使用[nom](https://docs.rs/nom/5.1.0/nom/)将
+这行解析为用'|'隔开的`Pipeline`，这时候只是简单的tokenized，而且保存的只有各token的`Span`，并未真正复制解析原数据。
+
+`classify_pipeline`：进一步解析`pipeline`中的每个元素。对于每个元素，先获取首个`token`，根据名字判断是内部命令还是外部命令。
+如果是内部命令，将参数分为命名参数和位置参数。如果是外部命令，将各参数简单地复制为字符串。
+
+`run_pipeline`：对于内部命令，第一步先`evaluate_args`将参数转换为实际值，某些有特定参数的命令，  
+可以定义其特定参数的结构体，然后使用[serde](http://serde.rs/)自动实现`Deserialize`trait。根据参数结构体，
+使用自定义的`ConfigDeserializer`将evaluated的参数进一步转换为特定类型的值。这样实际执行的时候，就可以使用转换好的自定义结构体，
+而不是从参数中一个一个手动转换了。对于外部命令，使用标准库的`Command`执行命令。对于多个命令piped，可以将前一个命令的输出值
+当成下一个命令的输入值来传递（除内部命令和外部命令外都使用StdIO实现）。
+
+
+### 特性
+* 跨平台
+* pipeline：如`ls | count`，可以输出当前目录的所有文件和目录数量之和
+* help：可以根据各命令的signature输出相应信息.
+![](http://cdn.lsongzhi.cn/blog/20200213235455.png)
+* 对于执行过程中的错误，获取然后输出。目前解析过程中特定token解析失败可以输出包含其位置的错误。
+![](http://cdn.lsongzhi.cn/blog/20200213235823.png)
+* 使用除字符串以外多种类型的值

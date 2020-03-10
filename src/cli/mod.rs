@@ -1,17 +1,16 @@
-use std::sync::atomic::Ordering;
-use std::sync::Arc;
-
-use rustyline::error::ReadlineError;
 use rustyline::{self, At, Cmd, ColorMode, Config, Editor, KeyPress, Movement, Word};
+use rustyline::error::ReadlineError;
+use std::sync::Arc;
+use std::sync::atomic::Ordering;
 
-use crate::commands::classified::pipeline::run_pipeline;
 use crate::commands::{BoxedCommand, Command};
+use crate::commands::classified::pipeline::run_pipeline;
 use crate::context::Context;
 use crate::error::{ProximateShellError, ShellError};
 use crate::parser;
+use crate::parser::command::classified::{ClassifiedCommand, ClassifiedPipeline, Commands};
 use crate::parser::command::classified::external::{ExternalArgs, ExternalCommand};
 use crate::parser::command::classified::internal::InternalCommand;
-use crate::parser::command::classified::{ClassifiedCommand, ClassifiedPipeline, Commands};
 use crate::parser::command::parse_command_tail;
 use crate::parser::span::HasSpan;
 use crate::parser::token::{SpannedToken, Token};
@@ -120,7 +119,7 @@ fn process_line(
                             println!("{}", val.to_string());
                         }
                     };
-                    LineResult::Success(line.to_string().clone())
+                    LineResult::Success(line.to_string())
                 }
                 Err(err) => LineResult::Error(line.to_string(), err),
             }
